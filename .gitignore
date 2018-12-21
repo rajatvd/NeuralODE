@@ -1,0 +1,4 @@
+data
+.ipynb_checkpoints
+__pycache__
+ODEMnistClassification
