@@ -2,6 +2,7 @@
 
 import torch
 from torch import nn
+from torchdiffeq import odeint_adjoint as odeint
 
 # %%
 ACTS = {
@@ -11,75 +12,191 @@ ACTS = {
 
 # %%
 
-class ConvNet(nn.Module):
-    """
-    CNN for MNIST using 3x3 convs and one final FC layer.
-    """
-    def __init__(self,
-                 input_size=28,
-                 channels=None,
-                 denses=None,
-                 activation='relu'):
-        """CNN for MNIST using 3x3 convs followed by fully connected layers.
-        Performs one 2x2 max pool after the first conv.
+class ODEfunc(nn.Module):
+    """Two convolution network for an ODE function.
+    Inputs and outputs are the same size.
 
-        Parameters
-        ----------
-        input_size : int
-            Dimension of input square image (the default is 28 for MNIST).
-        channels : list of ints
-            List of channels of conv layers including input channels
-            (the default is [1,32,32,16,8]).
-        denses : list of ints
-            Sequence of linear layer outputs after the conv layers
-            (the default is [10]).
-        activation : str
-            One of 'relu', 'sigmoid' or 'tanh' (the default is 'relu').
+    Parameters
+    ----------
+    dim : int
+        Number of channels in input (and output).
+    act : string
+        Activation function. One of relu, sigmoid or tanh (the default is 'relu').
+    """
 
-        """
+
+    def __init__(self, dim, act='relu'):
         super().__init__()
-        channels = channels or [1, 32, 32, 16, 8]
-        denses = denses or [10]
+        self.act = ACTS[act]()
+        self.conv1 = nn.Conv2d(dim, dim, 3, padding=1)
+        self.norm1 = nn.BatchNorm2d(dim)
+        self.conv2 = nn.Conv2d(dim, dim, 3, padding=1)
+        self.norm2 = nn.BatchNorm2d(dim)
+        self.conv3 = nn.Conv2d(dim, dim, 3, padding=1)
+        self.norm3 = nn.BatchNorm2d(dim)
+        self.conv4 = nn.Conv2d(dim, dim, 3, padding=1)
+        self.norm4 = nn.BatchNorm2d(dim)
+        self.nfe = 0
 
-        act = ACTS[activation]
-
-        convs = [nn.Conv2d(kernel_size=3, in_channels=in_ch, out_channels=out_ch)
-                 for in_ch, out_ch in zip(channels[:-1], channels[1:])]
-
-        if len(channels) <= 1:
-            self.conv_net = None
-            feature_count = input_size*input_size
-        else:
-            self.conv_net = nn.Sequential(
-                convs[0],
-                nn.MaxPool2d(kernel_size=2),
-                act(),
-                *[layer for tup in zip(convs[1:], [act() for _ in convs[1:]]) for layer in tup]
-            )
-
-            with torch.no_grad():
-                test_inp = torch.randn(1, 1, input_size, input_size)
-                features = self.conv_net(test_inp)
-                feature_count = features.view(-1).shape[0]
-
-        linears = [nn.Linear(in_f, out_f) for in_f, out_f in
-                   zip([feature_count]+denses[:-1], denses)]
-
-        self.dense = nn.Sequential(
-            *[layer for tup in zip(linears, [act() for _ in linears]) for layer in tup][:-1]
-        )
-
-
-    def forward(self, input):
-        if self.conv_net:
-            input = self.conv_net(input)
-        out = self.dense(input.view(input.shape[0], -1))
+    def forward(self, t, x):
+        self.nfe += 1
+        out = self.conv1(x)
+        out = self.norm1(out)
+        out = self.act(out)
+        out = self.conv2(x)
+        out = self.norm2(out)
+        out = self.act(out)
+        out = self.conv3(x)
+        out = self.norm3(out)
+        out = self.act(out)
+        out = self.conv4(out)
+        out = self.norm4(out)
         return out
 
+# %%
+
+class ODEBlock(nn.Module):
+    """Short summary.
+
+    Parameters
+    ----------
+    odefunc : nn.Module
+        An nn.Module which has an nfe attribute and has same input and output
+        sizes.
+
+    rtol: float
+        Relative tolerance for ODE evaluations. Default 1e-3
+
+    atol: float
+        Absolute tolerance for ODE evaluations. Default 1e-3
+
+    Forward takes x and t as inputs, and returns the final state
+    at the given input time points t. Default t is [0, 1]
+    self.outputs contains all the outputs at each time step.
+    """
+
+    def __init__(self, odefunc, rtol=1e-3, atol=1e-3):
+        super().__init__()
+        self.odefunc = odefunc
+        self.t = torch.tensor([0, 1]).float()
+        self.outputs = None
+        self.rtol = rtol
+        self.atol = atol
+
+    def forward(self, x, t=None):
+        if t is None:
+            times = self.t
+        else:
+            times = t
+        self.outputs = odeint(self.odefunc,
+                              x,
+                              times,
+                              rtol=self.rtol,
+                              atol=self.atol)
+        return self.outputs[1]
+
+    @property
+    def nfe(self):
+        """Number of function evaluations"""
+        return self.odefunc.nfe
+
+    @nfe.setter
+    def nfe(self, value):
+        self.odefunc.nfe = value
+
+# # %%
+# import imageio
+#
+# # %%
+# f = ODEfunc(3).eval()
+# nn.utils.parameters_to_vector(f.parameters()).shape
+#
+# with torch.no_grad():
+#     inp = torch.randn(1,3,224,224)
+#     f(0, inp).shape
+#     t = torch.linspace(0,500,100)
+#     odenet = ODEBlock(f).eval()
+#     odenet(inp, t).shape
+#     print(odenet.nfe)
+#     print(odenet.outputs.shape)
+#
+# with torch.no_grad():
+#     ims = odenet.outputs
+#     ims = torch.sigmoid(ims)
+#     ims = ims.squeeze().detach().numpy().transpose([0,2,3,1])
+#     ims.shape
+#     imageio.mimwrite("test.gif", ims, duration=0.05)
+#
 # # %%
 #
-# net = ConvNet()
-# test_inp = torch.randn(32,1,28,28)
-# out = net(test_inp)
-# out.shape
-# net
+# with torch.no_grad():
+#     ims2 = []
+#     inp = torch.randn(1,3,224,224)
+#     for i in range(100):
+#         inp += f(0,inp)
+#         print(inp.std())
+#         ims2.append(torch.sigmoid(inp).squeeze().detach().numpy().transpose([1,2,0]))
+#
+#     imageio.mimwrite("conving.gif", ims2)
+
+# %%timeit
+# torch.eig(torch.randn(784,784))
+
+# %%
+
+class ODEnet(nn.Module):
+    """ODE net for classifying images.
+
+    Performs one downsampling conv + fractional max pool. Then applies the ode
+    network, followed by a final fully connected layer after flattening.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of channels in the input image.
+    state_channels : int
+        Number of channels in the state of the ODE. Output channels of the first
+        downsampling conv.
+    state_size : int
+        Height(=width) of the state of ODE. Output size of first downsampling.
+    output_size : int
+        Number of output classes (the default is 10).
+    act : string
+        Activation for the odefunc. (relu, sigmoid or tanh) (the default is 'relu').
+    tol : float
+        Relative and absolute tolerance for ODE evaluations (the default is 1e-3).
+    """
+    def __init__(self,
+                 in_channels,
+                 state_channels,
+                 state_size,
+                 output_size=10,
+                 act='relu',
+                 tol=1e-3):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, state_channels, 3, padding=1)
+        self.norm1 = nn.BatchNorm2d(state_channels)
+        self.pool = nn.FractionalMaxPool2d(2, output_size=state_size)
+        self.odefunc = ODEfunc(state_channels, act=act)
+        self.odeblock = ODEBlock(self.odefunc, rtol=tol, atol=tol)
+        self.fc = nn.Linear(state_size*state_size*state_channels,
+                            output_size)
+
+    def forward(self, x, t=None):
+        out = self.conv1(x)
+        out = self.norm1(out)
+        out = self.pool(out)
+        out = self.odeblock(out, t)
+        out = out.view(out.shape[0], -1)
+        out = self.fc(out)
+        return out
+
+# %%
+
+# odenet = ODEnet(1, 16, 7)
+#
+# test_in = torch.randn(32,1,28,28)
+# test_out = odenet(test_in)
+# nn.utils.parameters_to_vector(odenet.parameters()).shape
+# t = torch.linspace(0,1,100)
+# test_out = odenet(test_in, t=t)
