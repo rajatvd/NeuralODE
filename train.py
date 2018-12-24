@@ -97,5 +97,5 @@ def main(_run):
                   val_loader=val,
                   callback=callback,
                   callback_metric_names=['val_loss', 'val_acc', 'learning_rate'],
-                  batch_metric_names=['loss', 'acc'],
-                  updaters=[averager, averager])})
+                  batch_metric_names=['loss', 'acc', 'nfef', 'nfeb'],
+                  updaters=[averager]*4)})

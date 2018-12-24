@@ -1,5 +1,5 @@
 """
-Train on batch function for training a ConvNet on MNIST
+Train on batch and other functions for training a ODEnet on MNIST
 """
 import torch
 from torch import nn
@@ -30,15 +30,23 @@ def train_on_batch(model, batch, optimizer):
     criterion = nn.CrossEntropyLoss()
 
     images, labels = batch
+
+    model.odefunc.nfe = 0
     outputs = model(images)
+    nfe_forward = model.odefunc.nfe
     loss = criterion(outputs, labels)
 
     # backward and optimize
+    model.odefunc.nfe = 0
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+    nfe_backward = model.odefunc.nfe
 
-    return loss.cpu().detach().numpy(), st.accuracy(outputs.cpu(), labels.cpu())
+    loss = loss.cpu().detach().numpy()
+    acc = st.accuracy(outputs.cpu(), labels.cpu())
+    return loss, acc, nfe_forward, nfe_backward
+
 
 
 def validate(model, val_loader):
@@ -59,7 +67,6 @@ def validate(model, val_loader):
 
     with torch.no_grad():
         model = model.eval()
-
         val_loss = 0
         accuracy = 0
         total = 0
