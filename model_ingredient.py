@@ -3,7 +3,7 @@
 import torch
 
 from sacred import Ingredient
-from modules import ODEnet
+from modules import ODEnetRandTime
 
 model_ingredient = Ingredient('model')
 
@@ -16,6 +16,8 @@ def model_config():
     output_size = 10
     act = 'relu'
     tol = 1e-3
+    min_end_time = 1
+    max_end_time = 10
     device = 'cpu'
 
 @model_ingredient.capture
@@ -25,19 +27,23 @@ def make_model(in_channels,
                output_size,
                act,
                tol,
+               min_end_time,
+               max_end_time,
                device,
                _log):
     """Create ODEnet model from config"""
-    model = ODEnet(in_channels,
-                   state_channels,
-                   state_size,
-                   output_size=output_size,
-                   act=act,
-                   tol=tol).to(device)
+    model = ODEnetRandTime(in_channels,
+                           state_channels,
+                           state_size,
+                           output_size=output_size,
+                           act=act,
+                           min_end_time=min_end_time,
+                           max_end_time=max_end_time,
+                           tol=tol).to(device)
 
     params = torch.nn.utils.parameters_to_vector(model.parameters())
     num_params = len(params)
-    _log.info(f"Created ODEnet model with {num_params} parameters \
+    _log.info(f"Created ODEnetRandTime model with {num_params} parameters \
     on {device}")
 
     ode_params = torch.nn.utils.parameters_to_vector(
