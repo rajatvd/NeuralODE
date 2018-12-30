@@ -6,7 +6,7 @@ import json
 
 import torch
 from sacred import Experiment
-
+from pytorch_utils.sacred_trainer import read_config, get_model_path
 from training_functions import validate
 
 from model_ingredient import make_model
