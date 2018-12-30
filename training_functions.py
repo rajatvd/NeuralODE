@@ -4,6 +4,8 @@ Train on batch and other functions for training a ODEnet on MNIST
 import torch
 from torch import nn
 from torch import optim
+from tqdm import tqdm
+import logging
 
 import pytorch_utils.sacred_trainer as st
 
@@ -49,7 +51,7 @@ def train_on_batch(model, batch, optimizer):
 
 
 
-def validate(model, val_loader):
+def validate(model, val_loader, _log=logging.getLogger('validate')):
     """Find loss and accuracy on the given dataloader using the model.
 
     Parameters
@@ -70,7 +72,8 @@ def validate(model, val_loader):
         val_loss = 0
         accuracy = 0
         total = 0
-        for images, labels in val_loader:
+        _log.info(f"Running validate with {len(val_loader)} steps")
+        for images, labels in tqdm(val_loader):
 
             criterion = nn.CrossEntropyLoss()
             batch_size = images.shape[0]
