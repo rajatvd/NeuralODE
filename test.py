@@ -1,9 +1,5 @@
-"""Test a ODENet on the MNIST dataset.
-"""
+"""Test a ODENet on the MNIST dataset."""
 # %%
-import os
-import json
-
 import torch
 from sacred import Experiment
 from pytorch_utils.sacred_trainer import read_config, get_model_path
@@ -18,7 +14,7 @@ ex = Experiment('test_mnist')
 @ex.config
 def input_config():
     """Parameters for sampling using the given model"""
-    run_dir = 'MnistClassification/8'
+    run_dir = 'runs/ODEMnistClassification/8'
     epoch = 'latest'
     device = 'cpu'
 

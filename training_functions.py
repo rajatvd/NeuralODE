@@ -67,14 +67,14 @@ def validate(model, val_loader, _log=logging.getLogger('validate')):
         Both are numpy
     """
 
-    with torch.no_grad():
-        model = model.eval()
-        val_loss = 0
-        accuracy = 0
-        total = 0
-        _log.info(f"Running validate with {len(val_loader)} steps")
-        for images, labels in tqdm(val_loader):
 
+    model = model.eval()
+    val_loss = 0
+    accuracy = 0
+    total = 0
+    _log.info(f"Running validate with {len(val_loader)} steps")
+    for images, labels in tqdm(val_loader):
+        with torch.no_grad():
             criterion = nn.CrossEntropyLoss()
             batch_size = images.shape[0]
 
@@ -86,11 +86,11 @@ def validate(model, val_loader, _log=logging.getLogger('validate')):
             accuracy += st.accuracy(outputs, labels)*batch_size
             total += batch_size
 
-        val_loss /= total
-        accuracy /= total
+    val_loss /= total
+    accuracy /= total
 
-        model = model.train()
-        return val_loss.cpu().numpy(), accuracy
+    model = model.train()
+    return val_loss.cpu().numpy(), accuracy
 
 def scheduler_generator(optimizer, milestones, gamma):
     """A generator which performs lr scheduling on the given optimizer using
