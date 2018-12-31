@@ -28,6 +28,7 @@ def input_config():
     attack = 'fgsm' # type of attack, currently: [fgsm]
     min_end_time = 10
     max_end_time = 100
+    tol = 1e-3
 
 @ex.automain
 def main(run_dir,
@@ -37,6 +38,7 @@ def main(run_dir,
          epsilon,
          min_end_time,
          max_end_time,
+         tol,
          _log):
 
     config = read_config(run_dir)
@@ -53,6 +55,8 @@ def main(run_dir,
         _log.info(f"Updated times to {[min_end_time, max_end_time]}")
         model.odeblock.min_end_time = min_end_time
         model.odeblock.max_end_time = max_end_time
+        model.odeblock.atol = tol
+        model.odeblock.rtol = tol
 
     data_ing = import_source(run_dir, "data_ingredient")
     dset, tl, vl, test_loader = data_ing.make_dataloaders(**{**config['dataset'],
