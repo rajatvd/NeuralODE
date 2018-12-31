@@ -18,7 +18,7 @@ ATTACKS = {
 }
 
 # %%
-ex = Experiment('adv_test_mnist_time')
+ex = Experiment('odenet-adv-mnist_time')
 ex.observers.append(VisdomObserver())
 
 @ex.config
