@@ -50,7 +50,7 @@ def main(run_dir,
     _log.info(f"Loaded state dict from {path}")
 
     if hasattr(model, "odeblock"):
-        _log.info(f"Updated times to f{[min_end_time, max_end_time]}")
+        _log.info(f"Updated times to {[min_end_time, max_end_time]}")
         model.odeblock.min_end_time = min_end_time
         model.odeblock.max_end_time = max_end_time
 
