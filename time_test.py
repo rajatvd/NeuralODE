@@ -76,5 +76,5 @@ def main(run_dir,
         test_loss, test_acc = validate(model, adv_test_loader)
         ex.log_scalar("test_loss", test_loss)
         ex.log_scalar("test_acc", test_acc)
+        ex.log_scalar("end_time", end_time)
         _log.info(f"Test loss = {test_loss:.6f}, Test accuracy = {test_acc:.4f}")
-        
