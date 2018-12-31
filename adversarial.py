@@ -23,6 +23,8 @@ def fgsm(model, inp, label, epsilon=0.3):
         Adversarially perturbed input.
 
     """
+    if epsilon == 0:
+        return inp.clone().detach()
     inp = inp.clone().detach().requires_grad_(True)
     output = model(inp)
     loss = nn.CrossEntropyLoss()(output, label)
