@@ -76,6 +76,7 @@ def main(run_dir,
     for end_time in np.linspace(end_time_start, end_time_end, num_times):
         model.odeblock.min_end_time = end_time
         model.odeblock.max_end_time = end_time
+        model.odeblock.t = torch.tensor([0, end_time]).float()
         test_loss, test_acc = validate(model, adv_test_loader)
         ex.log_scalar("test_loss", test_loss)
         ex.log_scalar("test_acc", test_acc)
