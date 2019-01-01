@@ -6,11 +6,12 @@ import torch
 import numpy as np
 from sacred import Experiment
 from pytorch_utils.sacred_utils import get_model_path, read_config, import_source
+from visdom_observer.visdom_observer import VisdomObserver
+from sacred.observers import FileStorageObserver
 
 from training_functions import validate
 import adversarial as adv
 
-from visdom_observer.visdom_observer import VisdomObserver
 
 # %%
 ATTACKS = {
@@ -19,6 +20,8 @@ ATTACKS = {
 
 # %%
 ex = Experiment('odenet-adv-mnist_time')
+SAVE_DIR = 'runs/ODEnet-adversarial-test-mnist'
+ex.observers.append(FileStorageObserver.create(SAVE_DIR))
 ex.observers.append(VisdomObserver())
 
 @ex.config
