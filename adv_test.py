@@ -12,7 +12,8 @@ import adversarial as adv
 
 # %%
 ATTACKS = {
-    'fgsm':adv.fgsm
+    'fgsm':adv.fgsm,
+    'pgd':adv.pgd
 }
 
 # %%
@@ -25,10 +26,14 @@ def input_config():
     epoch = 'latest'
     device = 'cpu'
     epsilon = 0.3 # epsilon for attack
-    attack = 'fgsm' # type of attack, currently: [fgsm]
+    attack = 'fgsm' # type of attack, currently: [fgsm, pgd]
     min_end_time = 10
     max_end_time = 100
     tol = 1e-3
+
+    pgd_step_size = 0.01
+    pgd_num_steps = 40
+    pgd_random_start = True
 
 @ex.automain
 def main(run_dir,
@@ -39,6 +44,9 @@ def main(run_dir,
          min_end_time,
          max_end_time,
          tol,
+         pgd_step_size,
+         pgd_num_steps,
+         pgd_random_start,
          _log):
 
     config = read_config(run_dir)
@@ -63,8 +71,16 @@ def main(run_dir,
                                                              'device':device},
                                                           _log=_log)
 
-    attack = partial(ATTACKS[attack], epsilon=epsilon)
-    adv_test_loader = adv.AdversarialLoader(model, test_loader, attack)
+    if attack == 'pgd':
+        attack_fn = partial(ATTACKS[attack],
+                            epsilon=epsilon,
+                            step_size=pgd_step_size,
+                            num_steps=pgd_num_steps,
+                            random_start=pgd_random_start)
+    else:
+        attack_fn = partial(ATTACKS[attack], epsilon=epsilon)
+
+    adv_test_loader = adv.AdversarialLoader(model, test_loader, attack_fn)
 
     _log.info("Testing model...")
     test_loss, test_acc = validate(model, adv_test_loader)
