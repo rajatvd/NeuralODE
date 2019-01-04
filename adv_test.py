@@ -88,4 +88,8 @@ def main(run_dir,
     _log.info("Testing model...")
     test_loss, test_acc = validate(model, adv_test_loader)
 
-    _log.info(f"Test loss = {test_loss:.6f}, Test accuracy = {test_acc:.4f}")
+
+    output = f"Test loss = {test_loss:.6f}, Test accuracy = {test_acc:.4f}"
+    _log.info(output)
+
+    return output
