@@ -5,6 +5,7 @@ from functools import partial
 
 import torch
 from sacred import Experiment
+from sacred.observers import FileStorageObserver
 from pytorch_utils.sacred_utils import get_model_path, read_config, import_source
 
 from training_functions import validate
@@ -18,6 +19,8 @@ ATTACKS = {
 
 # %%
 ex = Experiment('adv_test_mnist')
+SAVE_DIR = "runs/AdvTestMnist"
+ex.observers.append(FileStorageObserver.create(SAVE_DIR))
 
 @ex.config
 def input_config():
