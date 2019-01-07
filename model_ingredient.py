@@ -32,7 +32,7 @@ def make_model(in_channels,
                device,
                _log):
     """Create ODEnet model from config"""
-    model = ODEnetRandTime(in_channels,
+    ode_model = ODEnetRandTime(in_channels,
                            state_channels,
                            state_size,
                            output_size=output_size,
@@ -41,9 +41,9 @@ def make_model(in_channels,
                            max_end_time=max_end_time,
                            tol=tol)
     if isinstance(device, list):
-        model = nn.DataParallel(model, device_ids=device).to(device[0])
+        model = nn.DataParallel(ode_model, device_ids=device).to(device[0])
     else:
-        model = model.to(device)
+        model = ode_model.to(device)
 
     params = torch.nn.utils.parameters_to_vector(model.parameters())
     num_params = len(params)
@@ -51,6 +51,6 @@ def make_model(in_channels,
     on {device}")
 
     ode_params = torch.nn.utils.parameters_to_vector(
-        model.odefunc.parameters()).shape[0]
+        ode_model.odefunc.parameters()).shape[0]
     _log.info(f"ODE function has {ode_params} parameters")
     return model
