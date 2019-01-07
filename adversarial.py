@@ -1,6 +1,5 @@
 """Adversarial attacks"""
 from torch import nn
-import numpy as np
 import torch
 
 # %%
@@ -152,28 +151,28 @@ def pgd(model, inp, label,
 
     """
 
-
-    adv_inp = inp.clone().detach().cpu().numpy()
+    adv_inp = inp.clone().detach()
     if epsilon == 0:
-        return torch.tensor(adv_inp, device=inp.device)
+        return adv_inp
 
     if random_start:
-        adv_inp += np.random.uniform(-epsilon, epsilon, adv_inp.shape)
+        adv_inp += torch.rand(*adv_inp.shape, device=inp.device)*2*epsilon - epsilon
 
 
     for i in range(num_steps):
-        inp_var = torch.tensor(adv_inp).to(inp.device).requires_grad_(True)
+        inp_var = adv_inp.clone().requires_grad_(True)
 
         output = model(inp_var)
         loss = nn.CrossEntropyLoss()(output, label)
         loss.backward()
 
-        adv_inp += inp_var.grad.sign().cpu().numpy()*step_size
+        adv_inp += inp_var.grad.sign()*step_size
 
-        adv_inp = np.clip(adv_inp, adv_inp-epsilon, adv_inp+epsilon)
-        adv_inp = np.clip(adv_inp, *pixel_range)
+        adv_inp = torch.max(torch.min(adv_inp, adv_inp+epsilon), adv_inp-epsilon)
+        adv_inp = torch.clamp(adv_inp, *pixel_range)
 
-    return torch.tensor(adv_inp, device=inp.device)
+
+    return adv_inp.clone().detach()
 
 # # %%
 # import logging
