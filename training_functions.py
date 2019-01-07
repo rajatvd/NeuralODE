@@ -36,17 +36,17 @@ def train_on_batch(model, batch, optimizer):
 
     images, labels = batch
 
-    ode_model.odefunc.nfe = 0
+    ode_model.odefunc.nfe.fill_(0)
     outputs = model(images)
-    nfe_forward = ode_model.odefunc.nfe
+    nfe_forward = ode_model.odefunc.nfe.item()
     loss = criterion(outputs, labels)
 
     # backward and optimize
-    ode_model.odefunc.nfe = 0
+    ode_model.odefunc.nfe.fill_(0)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    nfe_backward = ode_model.odefunc.nfe
+    nfe_backward = ode_model.odefunc.nfe.item()
 
     loss = loss.cpu().detach().numpy()
     acc = st.accuracy(outputs.cpu(), labels.cpu())

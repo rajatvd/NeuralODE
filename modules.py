@@ -36,7 +36,7 @@ class ODEfunc(nn.Module):
         self.norm4 = norm(dim)
         self.conv4 = conv3x3(dim, dim)
         self.norm5 = norm(dim)
-        self.nfe = 0
+        self.nfe = torch.tensor(0)
 
     def forward(self, t, x):
         self.nfe += 1
@@ -82,7 +82,7 @@ class ConvODEfunc(nn.Module):
         self.norm3 = nn.BatchNorm2d(dim)
         self.conv4 = nn.Conv2d(dim, dim, 3, padding=1)
         self.norm4 = nn.BatchNorm2d(dim)
-        self.nfe = 0
+        self.nfe = torch.tensor(0)
 
     def forward(self, t, x):
         self.nfe += 1
@@ -145,11 +145,11 @@ class ODEBlock(nn.Module):
     @property
     def nfe(self):
         """Number of function evaluations"""
-        return self.odefunc.nfe
+        return self.odefunc.nfe.item()
 
     @nfe.setter
     def nfe(self, value):
-        self.odefunc.nfe = value
+        self.odefunc.nfe.fill_(value)
 
 # # %%
 # import imageio
@@ -319,11 +319,11 @@ class ODEBlockRandTime(nn.Module):
     @property
     def nfe(self):
         """Number of function evaluations"""
-        return self.odefunc.nfe
+        return self.odefunc.nfe.item()
 
     @nfe.setter
     def nfe(self, value):
-        self.odefunc.nfe = value
+        self.odefunc.nfe.fill_(value)
 
 # # %%
 # device = 'cuda'
