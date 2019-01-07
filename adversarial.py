@@ -45,9 +45,11 @@ def fgsm(model, inp, label, epsilon=0.3):
 #     def forward(self, input):
 #         return self.layer(input.view(input.shape[0],-1))
 #
-# model = Model()
-# input = torch.randn(5,28,28)
-# label = torch.LongTensor([5,3,2,1,0])
+# device='cuda'
+# model = Model().to(device)
+# input = torch.randn(5,28,28).to(device)
+# inp = input
+# label = torch.LongTensor([5,3,2,1,0]).to(device)
 #
 # # %%
 # adv_inp = fgsm(model, input, label)
