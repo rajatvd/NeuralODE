@@ -29,6 +29,8 @@ def train_on_batch(model, batch, optimizer):
     """
     if isinstance(model, nn.DataParallel):
         ode_model = model.module
+    else:
+        ode_model = model
 
     criterion = nn.CrossEntropyLoss()
 
