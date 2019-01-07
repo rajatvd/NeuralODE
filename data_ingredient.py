@@ -41,6 +41,9 @@ def make_dataloaders(batch_size,
         Returns the dataset, and the train, validation, and test DataLoaders.
 
     """
+    if isinstance(device, list):
+        device = device[0]
+    
 
     dset = MyMNIST("data", download=True, device=device)
     test_dset = MyMNIST("data", download=True, train=False, device=device)

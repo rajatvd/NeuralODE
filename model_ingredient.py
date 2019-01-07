@@ -1,7 +1,7 @@
 """Ingredient for making a ODEnet model for MNIST"""
 
 import torch
-
+from torch import nn
 from sacred import Ingredient
 from modules import ODEnetRandTime
 
@@ -39,7 +39,11 @@ def make_model(in_channels,
                            act=act,
                            min_end_time=min_end_time,
                            max_end_time=max_end_time,
-                           tol=tol).to(device)
+                           tol=tol)
+    if isinstance(device, list):
+        model = nn.DataParallel(model, device_ids=device).to(device[0])
+    else:
+        model = model.to(device)
 
     params = torch.nn.utils.parameters_to_vector(model.parameters())
     num_params = len(params)

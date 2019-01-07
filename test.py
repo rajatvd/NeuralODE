@@ -34,7 +34,10 @@ def main(run_dir,
     model_ing = import_source(run_dir, "model_ingredient")
     model = model_ing.make_model(**{**config['model'], 'device':device}, _log=_log)
     path = get_model_path(run_dir, epoch)
-    model.load_state_dict(torch.load(path))
+    if isinstance(model, nn.DataParallel):
+        model.module.load_state_dict(torch.load(path))
+    else:
+        model.load_state_dict(torch.load(path))
     model = model.eval()
     _log.info(f"Loaded state dict from {path}")
 
