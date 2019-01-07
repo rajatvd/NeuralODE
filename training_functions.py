@@ -27,23 +27,24 @@ def train_on_batch(model, batch, optimizer):
     tuple: loss, accuracy
         Both are numpy
     """
-
+    if isinstance(model, nn.DataParallel):
+        ode_model = model.module
 
     criterion = nn.CrossEntropyLoss()
 
     images, labels = batch
 
-    model.odefunc.nfe = 0
+    ode_model.odefunc.nfe = 0
     outputs = model(images)
-    nfe_forward = model.odefunc.nfe
+    nfe_forward = ode_model.odefunc.nfe
     loss = criterion(outputs, labels)
 
     # backward and optimize
-    model.odefunc.nfe = 0
+    ode_model.odefunc.nfe = 0
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    nfe_backward = model.odefunc.nfe
+    nfe_backward = ode_model.odefunc.nfe
 
     loss = loss.cpu().detach().numpy()
     acc = st.accuracy(outputs.cpu(), labels.cpu())
