@@ -168,7 +168,7 @@ def pgd(model, inp, label,
 
         adv_inp += inp_var.grad.sign()*step_size
 
-        adv_inp = torch.max(torch.min(adv_inp, adv_inp+epsilon), adv_inp-epsilon)
+        adv_inp = torch.max(torch.min(adv_inp, inp+epsilon), inp-epsilon)
         adv_inp = torch.clamp(adv_inp, *pixel_range)
 
 
