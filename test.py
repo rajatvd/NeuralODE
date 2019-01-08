@@ -1,6 +1,7 @@
 """Test a ODENet on the MNIST dataset."""
 # %%
 import torch
+from torch import nn
 from sacred import Experiment
 from pytorch_utils.sacred_utils import read_config, get_model_path, import_source
 from training_functions import validate

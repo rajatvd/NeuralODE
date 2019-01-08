@@ -3,6 +3,7 @@
 from functools import partial
 
 import torch
+from torch import nn
 import numpy as np
 from sacred import Experiment
 from pytorch_utils.sacred_utils import get_model_path, read_config, import_source
