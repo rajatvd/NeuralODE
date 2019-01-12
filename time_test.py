@@ -37,6 +37,21 @@ def input_config():
     end_time_end = 1000
     num_times = 1000
     tol = 1e-3
+    batches = -1
+
+class TruncIterator():
+    def __init__(self, iterator, stop):
+        self.iterator = iterator
+        self.stop = stop
+
+    def __iter__(self):
+        end = self.stop if self.stop != -1 else len(self.iterator)
+        it = iter(self.iterator)
+        for i in range(end):
+            yield next(it)
+
+    def __len__(self):
+        return self.stop if self.stop != -1 else len(self.iterator)
 
 @ex.automain
 def main(run_dir,
@@ -48,6 +63,7 @@ def main(run_dir,
          end_time_end,
          num_times,
          tol,
+         batches,
          _log):
 
     config = read_config(run_dir)
@@ -74,7 +90,7 @@ def main(run_dir,
 
     attack = partial(ATTACKS[attack], epsilon=epsilon)
     adv_test_loader = adv.AdversarialLoader(model, test_loader, attack)
-
+    adv_test_loader = TruncIterator(adv_test_loader, batches)
     _log.info("Testing model...")
 
     for end_time in np.linspace(end_time_start, end_time_end, num_times):
