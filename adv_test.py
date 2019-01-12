@@ -18,6 +18,20 @@ ATTACKS = {
     'pgd':adv.pgd
 }
 
+class TruncIterator():
+    def __init__(self, iterator, stop):
+        self.iterator = iterator
+        self.stop = stop
+
+    def __iter__(self):
+        end = self.stop if self.stop != -1 else len(self.iterator)
+        it = iter(self.iterator)
+        for i in range(end):
+            yield next(it)
+
+    def __len__(self):
+        return self.stop if self.stop != -1 else len(self.iterator)
+
 # %%
 ex = Experiment('adv_test_mnist')
 SAVE_DIR = "runs/AdvTestMnist"
@@ -34,6 +48,7 @@ def input_config():
     min_end_time = 10
     max_end_time = 100
     tol = 1e-3
+    batches = -1
 
     pgd_step_size = 0.01
     pgd_num_steps = 40
@@ -48,6 +63,7 @@ def main(run_dir,
          min_end_time,
          max_end_time,
          tol,
+         batches,
          pgd_step_size,
          pgd_num_steps,
          pgd_random_start,
@@ -88,6 +104,7 @@ def main(run_dir,
         attack_fn = partial(ATTACKS[attack], epsilon=epsilon)
 
     adv_test_loader = adv.AdversarialLoader(model, test_loader, attack_fn)
+    adv_test_loader = TruncIterator(adv_test_loader, batches)
 
     _log.info("Testing model...")
     test_loss, test_acc = validate(model, adv_test_loader)
