@@ -38,7 +38,7 @@ def main(run_dir,
     if isinstance(model, nn.DataParallel):
         model.module.load_state_dict(torch.load(path))
     else:
-        model.load_state_dict(torch.load(path))
+        model.load_state_dict(torch.load(path, map_location=device))
     model = model.eval()
     _log.info(f"Loaded state dict from {path}")
 
