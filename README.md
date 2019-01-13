@@ -1,4 +1,4 @@
-# Neural ODE and Adversarial Attacks
+# Neural ODEs and Adversarial Attacks
 
 Code for my blog post on [Neural ODEs and Adversarial Attacks](https://rajatvd.github.io/Neural-ODE-Adversarial/) in which I train neural ODEs on MNIST with different end times and compare their adversarial robustness. I also adversarially train a neural ODE and investigate how this affects its dynamics. It seems like adversarially trained ODEs map different classes of inputs to different equilibria or steady states of the ODE.
 
