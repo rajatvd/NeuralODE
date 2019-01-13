@@ -1,6 +1,6 @@
 # Neural ODE and Adversarial Attacks
 
-Code for my blog post on [Neural ODEs and Adversarial Attacks](https://rajatvd.github.io/Neural-ODE-Adversarial//) in which I train neural ODEs on MNIST with different end times and compare their adversarial robustness. I also adversarially train a neural ODE and investigate how this affects its dynamics. It seems like adversarially trained ODEs map different classes of inputs to different equilibria or steady states of the ODE.
+Code for my blog post on [Neural ODEs and Adversarial Attacks](https://rajatvd.github.io/Neural-ODE-Adversarial/) in which I train neural ODEs on MNIST with different end times and compare their adversarial robustness. I also adversarially train a neural ODE and investigate how this affects its dynamics. It seems like adversarially trained ODEs map different classes of inputs to different equilibria or steady states of the ODE.
 
 Overview of the code:
 
@@ -17,7 +17,14 @@ Overview of the code:
 * `adversarial.py`: Code for adversarial attacks. Includes FGSM and Projected Gradient Descent(PGD).
 
 ### Scripts
-These are sacred experiments.
+These are sacred experiments. Use this general command to run them:
+
+`python <script_name>.py with <config_updates>`
+
+Run the following to see the config parameters:
+
+`python <script_name>.py print_config`
+
 * `train.py`: Loads the model and data ingredients and uses the `train_on_batch` and `validate` functions to train the model. Also contains the code which creates the optimizer.
 * `test.py`: Run inference on trained models by specifying a run directory and epoch to load.
 * `adv_train.py`: Train a model with adversarial data augmentation.
