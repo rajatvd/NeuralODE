@@ -17,7 +17,7 @@ Overview of the code:
 * `adversarial.py`: Code for adversarial attacks. Includes FGSM and Projected Gradient Descent(PGD).
 
 ### Scripts
-These are sacred experiments. Use this general command to run them:
+These are [sacred](https://github.com/IDSIA/sacred) experiments. Use this general command to run them:
 
 `python <script_name>.py with <config_updates>`
 
